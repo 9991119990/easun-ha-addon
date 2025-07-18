@@ -6,8 +6,8 @@ RUN \
     apk add --no-cache \
         python3 \
         py3-pip \
-        py3-serial \
     && pip3 install --no-cache-dir \
+        pyserial==3.5 \
         paho-mqtt==1.6.1 \
         bashio==0.15.0
 
