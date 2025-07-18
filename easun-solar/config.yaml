@@ -35,4 +35,5 @@ devices:
   - /dev/serial/by-id
 privileged:
   - SYS_ADMIN
-image: ghcr.io/{arch}-addon-easun-solar
+uart: true
+usb: true
