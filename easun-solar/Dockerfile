@@ -6,10 +6,10 @@ RUN \
     apk add --no-cache \
         python3 \
         py3-pip \
+        jq \
     && pip3 install --no-cache-dir \
         pyserial==3.5 \
-        paho-mqtt==1.6.1 \
-        bashio==0.15.0
+        paho-mqtt==1.6.1
 
 # Copy run script and Python monitor
 COPY run.sh /

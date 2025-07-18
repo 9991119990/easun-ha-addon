@@ -1,27 +1,37 @@
-#!/usr/bin/with-contenv bashio
+#!/usr/bin/with-contenv bash
 
-# Get configuration
-DEVICE=$(bashio::config 'device')
-MQTT_HOST=$(bashio::config 'mqtt_host')
-MQTT_PORT=$(bashio::config 'mqtt_port')
-MQTT_USER=$(bashio::config 'mqtt_user')
-MQTT_PASSWORD=$(bashio::config 'mqtt_password')
-UPDATE_INTERVAL=$(bashio::config 'update_interval')
+# Read configuration from options.json
+CONFIG_PATH="/data/options.json"
 
-# If MQTT credentials not provided, try to get from services
-if bashio::var.is_empty "${MQTT_USER}"; then
-    if bashio::services.available "mqtt"; then
-        MQTT_HOST=$(bashio::services "mqtt" "host")
-        MQTT_PORT=$(bashio::services "mqtt" "port")
-        MQTT_USER=$(bashio::services "mqtt" "username")
-        MQTT_PASSWORD=$(bashio::services "mqtt" "password")
-    fi
+if [ -f "$CONFIG_PATH" ]; then
+    DEVICE=$(jq -r '.device // "/dev/ttyUSB0"' "$CONFIG_PATH")
+    MQTT_HOST=$(jq -r '.mqtt_host // "core-mosquitto"' "$CONFIG_PATH")
+    MQTT_PORT=$(jq -r '.mqtt_port // 1883' "$CONFIG_PATH")
+    MQTT_USER=$(jq -r '.mqtt_user // ""' "$CONFIG_PATH")
+    MQTT_PASSWORD=$(jq -r '.mqtt_password // ""' "$CONFIG_PATH")
+    UPDATE_INTERVAL=$(jq -r '.update_interval // 10' "$CONFIG_PATH")
+else
+    # Default values
+    DEVICE="/dev/ttyUSB0"
+    MQTT_HOST="core-mosquitto"
+    MQTT_PORT="1883"
+    MQTT_USER=""
+    MQTT_PASSWORD=""
+    UPDATE_INTERVAL="10"
 fi
 
-bashio::log.info "Starting EASUN Solar Monitor..."
-bashio::log.info "Device: ${DEVICE}"
-bashio::log.info "MQTT Host: ${MQTT_HOST}:${MQTT_PORT}"
-bashio::log.info "Update interval: ${UPDATE_INTERVAL}s"
+# Try to get MQTT credentials from services if not provided
+if [ -z "$MQTT_USER" ] && [ -f "/etc/services.d/mqtt" ]; then
+    MQTT_HOST="core-mosquitto"
+    MQTT_PORT="1883"
+    MQTT_USER="addons"
+    MQTT_PASSWORD=""
+fi
+
+echo "Starting EASUN Solar Monitor..."
+echo "Device: ${DEVICE}"
+echo "MQTT Host: ${MQTT_HOST}:${MQTT_PORT}"
+echo "Update interval: ${UPDATE_INTERVAL}s"
 
 # Export variables for Python script
 export DEVICE
