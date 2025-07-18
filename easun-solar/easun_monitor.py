@@ -246,12 +246,13 @@ class EasunMonitor:
                 int(float(values[7])),  # 400 = 400W
             ]
             
-            # Vyber nejpravděpodobnější hodnotu (blízko 85W)
-            target_power = 85  # Co vidíš na displeji
-            best_power = min(possible_powers, key=lambda x: abs(x - target_power))
+            # Vypiš všechny možnosti do INFO logu (abychom je viděli)
+            logger.info(f"DEBUG - Raw values: {values}")
+            logger.info(f"DEBUG - Possible PV powers: {possible_powers}")
             
-            data['pv_input_power'] = best_power
-            logger.debug(f"Possible powers: {possible_powers}, selected: {best_power}")
+            # Prozatím použij první rozumnou hodnotu (budeme ladit)
+            data['pv_input_power'] = possible_powers[0]  # Začni s power_1
+            logger.info(f"DEBUG - Selected PV power: {data['pv_input_power']}W")
             
             # Určení stavu baterie
             if data['battery_charging_current'] > 0:

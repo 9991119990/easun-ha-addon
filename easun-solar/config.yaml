@@ -1,6 +1,6 @@
 name: "EASUN Solar Monitor"
 description: "Monitor EASUN SHM II solar inverters via USB/RS232"
-version: "1.0.3"
+version: "1.0.4"
 slug: "easun_solar"
 init: false
 arch:
