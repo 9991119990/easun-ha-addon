@@ -1,0 +1,38 @@
+name: "EASUN Solar Monitor"
+description: "Monitor EASUN SHM II solar inverters via USB/RS232"
+version: "1.0.0"
+slug: "easun_solar"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+startup: application
+boot: auto
+options:
+  device: "/dev/ttyUSB0"
+  mqtt_host: "core-mosquitto"
+  mqtt_port: 1883
+  mqtt_user: ""
+  mqtt_password: ""
+  update_interval: 10
+schema:
+  device: str
+  mqtt_host: str
+  mqtt_port: port
+  mqtt_user: str?
+  mqtt_password: password?
+  update_interval: int(5,60)
+services:
+  - mqtt:need
+devices:
+  - /dev/ttyUSB0
+  - /dev/ttyUSB1
+  - /dev/ttyACM0
+  - /dev/ttyACM1
+  - /dev/serial/by-id
+privileged:
+  - SYS_ADMIN
+image: ghcr.io/{arch}-addon-easun-solar
