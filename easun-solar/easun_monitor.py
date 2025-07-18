@@ -218,41 +218,22 @@ class EasunMonitor:
             logger.debug(f"Raw values: {values}")
             logger.debug(f"PV voltage raw: {values[13]}, PV current raw: {values[12]}")
             
-            # Zkusme různé interpretace dat
-            pv_voltage = data['pv_input_voltage']
-            pv_current_raw = data['pv_input_current']
+            # EASUN PV výkon je přímo v raw datech na pozici 19
+            # Raw data: ['000.0', '00.0', '230.0', '49.9', '0184', '0055', '002', '411', '54.40', '021', '072', '0038', '0021', '230.7', '00.00', '00000', '00010110', '00', '00', '01391', '010']
+            # Pozice 19 obsahuje '01391' = 1391W = 1.4kW (přesně co ukazuje displej)
             
-            # Možnosti interpretace proudu:
-            # 1. Proud v desetinách ampérů
-            pv_current_1 = pv_current_raw / 10.0
-            power_1 = int(pv_voltage * pv_current_1)
-            
-            # 2. Proud v setinách ampérů  
-            pv_current_2 = pv_current_raw / 100.0
-            power_2 = int(pv_voltage * pv_current_2)
-            
-            # 3. Možná je výkon přímo v jiné hodnotě
-            # V raw datech: 000.0 00.0 229.9 50.0 0229 0153 004 400 54.40 016 072 0045 0016 248.2 00.00 00000 00010
-            # Možná je PV výkon v hodnotě 4 (0229) nebo 5 (0153) apod.
-            
-            # Zkusme použít hodnotu, která dává smysl (85W očekáváme)
-            # Testuj různé možnosti
-            possible_powers = [
-                power_1,  # 248.2 * 1.6 = 397W
-                power_2,  # 248.2 * 0.16 = 39W
-                int(float(values[4])),  # 0229 = 229W
-                int(float(values[5])),  # 0153 = 153W
-                int(float(values[6])),  # 004 = 4W  
-                int(float(values[7])),  # 400 = 400W
-            ]
-            
-            # Vypiš všechny možnosti do INFO logu (abychom je viděli)
-            logger.info(f"DEBUG - Raw values: {values}")
-            logger.info(f"DEBUG - Possible PV powers: {possible_powers}")
-            
-            # Prozatím použij první rozumnou hodnotu (budeme ladit)
-            data['pv_input_power'] = possible_powers[0]  # Začni s power_1
-            logger.info(f"DEBUG - Selected PV power: {data['pv_input_power']}W")
+            if len(values) > 19:
+                try:
+                    data['pv_input_power'] = int(values[19])  # Přímý PV výkon z pozice 19
+                    logger.debug(f"PV power from position 19: {data['pv_input_power']}W")
+                except (ValueError, IndexError):
+                    # Fallback na starý výpočet
+                    data['pv_input_power'] = int(data['pv_input_voltage'] * data['pv_input_current'] / 10.0)
+                    logger.warning(f"Fallback PV calculation: {data['pv_input_power']}W")
+            else:
+                # Fallback pro kratší odpovědi
+                data['pv_input_power'] = int(data['pv_input_voltage'] * data['pv_input_current'] / 10.0)
+                logger.warning(f"Short response, fallback: {data['pv_input_power']}W")
             
             # Určení stavu baterie
             if data['battery_charging_current'] > 0:
