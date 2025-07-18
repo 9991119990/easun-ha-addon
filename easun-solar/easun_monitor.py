@@ -213,8 +213,17 @@ class EasunMonitor:
                 'device_status': values[16] if len(values) > 16 else ''
             }
             
-            # Výpočet PV výkonu
-            data['pv_input_power'] = int(data['pv_input_voltage'] * data['pv_input_current'])
+            # Výpočet PV výkonu - opraveno pro EASUN
+            # PV proud je v desetinách ampérů
+            pv_current_actual = data['pv_input_current'] / 10.0  # Převod na skutečné ampéry
+            data['pv_input_power'] = int(data['pv_input_voltage'] * pv_current_actual)
+            
+            # Bezpečnostní kontrola - max 2700W
+            if data['pv_input_power'] > 2700:
+                data['pv_input_power'] = int(data['pv_input_power'] / 10)  # Další dělení pokud stále moc
+                
+            # Debug info
+            logger.debug(f"PV: {data['pv_input_voltage']}V * {pv_current_actual}A = {data['pv_input_power']}W")
             
             # Určení stavu baterie
             if data['battery_charging_current'] > 0:
