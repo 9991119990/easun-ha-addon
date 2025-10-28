@@ -1,8 +1,9 @@
-#!/usr/bin/with-contenv bash
+#!/usr/bin/with-contenv bashio
 
 # Read configuration from options.json
 CONFIG_PATH="/data/options.json"
 
+# Read user configuration (fallback)
 if [ -f "$CONFIG_PATH" ]; then
     DEVICE=$(jq -r '.device // "/dev/ttyUSB0"' "$CONFIG_PATH")
     MQTT_HOST=$(jq -r '.mqtt_host // "core-mosquitto"' "$CONFIG_PATH")
@@ -22,6 +23,17 @@ else
     UPDATE_INTERVAL="10"
     MQTT_BASE_TOPIC="easun_solar"
     DEVICE_ID="easun_shm_ii_7k"
+fi
+
+# Prefer HA MQTT service if available, fallback to manual config
+if bashio::services.available "mqtt"; then
+    MQTT_HOST="$(bashio::services "mqtt" "host")"
+    MQTT_PORT="$(bashio::services "mqtt" "port")"
+    MQTT_USER="$(bashio::services "mqtt" "username")"
+    MQTT_PASSWORD="$(bashio::services "mqtt" "password")"
+    bashio::log.info "Using Home Assistant MQTT service credentials"
+else
+    bashio::log.info "Home Assistant MQTT service not found; using manual MQTT configuration"
 fi
 
 echo "Starting EASUN Solar Monitor..."
