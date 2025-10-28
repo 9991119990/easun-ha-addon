@@ -26,6 +26,8 @@ Monitor pro EASUN SHM II solární měniče přes USB/RS232 rozhraní.
    - `device`: USB port měniče (výchozí `/dev/ttyUSB0`)
    - `mqtt_*`: MQTT nastavení (automaticky z HA)
    - `update_interval`: Interval aktualizace v sekundách
+   - `mqtt_base_topic`: Základní MQTT topic (výchozí `easun_solar`)
+   - `device_id`: Identifikátor zařízení pro HA (výchozí `easun_shm_ii_7k`)
 
 4. Spusťte add-on
 
@@ -41,6 +43,9 @@ Monitor pro EASUN SHM II solární měniče přes USB/RS232 rozhraní.
 ```yaml
 device: /dev/ttyUSB0
 update_interval: 10
+# volitelné
+mqtt_base_topic: easun_solar
+device_id: easun_shm_ii_7k
 ```
 
 MQTT nastavení se automaticky převezme z Home Assistant.

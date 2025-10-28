@@ -8,6 +8,8 @@ import sys
 import paho.mqtt.client as mqtt
 from datetime import datetime
 
+VERSION = "1.0.5"
+
 # Konfigurace z prostředí
 SERIAL_PORT = os.environ.get('DEVICE', '/dev/ttyUSB0')
 BAUD_RATE = 2400
@@ -16,9 +18,10 @@ MQTT_PORT = int(os.environ.get('MQTT_PORT', 1883))
 MQTT_USER = os.environ.get('MQTT_USER', '')
 MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD', '')
 UPDATE_INTERVAL = int(os.environ.get('UPDATE_INTERVAL', 10))
+MQTT_BASE_TOPIC = os.environ.get('MQTT_BASE_TOPIC', 'easun_solar')
+DEVICE_ID = os.environ.get('DEVICE_ID', 'easun_shm_ii_7k')
 
 # MQTT topics
-MQTT_BASE_TOPIC = 'easun_solar'
 MQTT_DISCOVERY_PREFIX = 'homeassistant'
 
 # Logging
@@ -34,11 +37,11 @@ class EasunMonitor:
         self.serial_conn = None
         self.mqtt_client = None
         self.device_info = {
-            "identifiers": ["easun_shm_ii_7k"],
-            "name": "EASUN SHM II 7K",
+            "identifiers": [DEVICE_ID],
+            "name": f"EASUN SHM II 7K ({DEVICE_ID})",
             "model": "SHM II 7K",
             "manufacturer": "EASUN",
-            "sw_version": "1.0.0"
+            "sw_version": VERSION,
         }
         
     def connect_serial(self):
@@ -382,7 +385,7 @@ class EasunMonitor:
         
         # Publikování discovery zpráv
         for sensor in sensors:
-            unique_id = f"easun_{sensor['state_topic'].split('/')[-1]}"
+            unique_id = f"{self.device_info['identifiers'][0]}_{sensor['state_topic'].split('/')[-1]}"
             discovery_topic = f"{MQTT_DISCOVERY_PREFIX}/sensor/{unique_id}/config"
             
             config = {
@@ -432,7 +435,7 @@ class EasunMonitor:
     def run(self):
         """Hlavní smyčka"""
         logger.info("=== EASUN Solar Monitor Add-on ===")
-        logger.info(f"Verze: 1.0.0")
+        logger.info(f"Verze: {VERSION}")
         logger.info(f"Zařízení: {SERIAL_PORT}")
         logger.info(f"MQTT: {MQTT_HOST}:{MQTT_PORT}")
         logger.info(f"Interval: {UPDATE_INTERVAL}s")

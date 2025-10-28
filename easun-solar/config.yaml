@@ -18,13 +18,17 @@ options:
   mqtt_user: ""
   mqtt_password: ""
   update_interval: 10
+  mqtt_base_topic: "easun_solar"
+  device_id: "easun_shm_ii_7k"
 schema:
   device: str
   mqtt_host: str
   mqtt_port: port
   mqtt_user: str?
   mqtt_password: password?
-  update_interval: int(5,60)
+  update_interval: int(1,300)
+  mqtt_base_topic: str
+  device_id: str
 services:
   - mqtt:need
 devices:
@@ -33,7 +37,5 @@ devices:
   - /dev/ttyACM0
   - /dev/ttyACM1
   - /dev/serial/by-id
-privileged:
-  - SYS_ADMIN
 uart: true
 usb: true

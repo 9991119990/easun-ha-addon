@@ -1,11 +1,9 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Install Python and dependencies
+# Install runtime tools and Python deps
 RUN \
     apk add --no-cache \
-        python3 \
-        py3-pip \
         jq \
     && pip3 install --no-cache-dir \
         pyserial==3.5 \
