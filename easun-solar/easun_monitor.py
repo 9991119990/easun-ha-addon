@@ -8,7 +8,7 @@ import sys
 import paho.mqtt.client as mqtt
 from datetime import datetime
 
-VERSION = "1.0.7"
+VERSION = "1.0.8"
 
 # Konfigurace z prostředí
 SERIAL_PORT = os.environ.get('DEVICE', '/dev/ttyUSB0')
