@@ -20,6 +20,7 @@ MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD', '')
 UPDATE_INTERVAL = int(os.environ.get('UPDATE_INTERVAL', 10))
 MQTT_BASE_TOPIC = os.environ.get('MQTT_BASE_TOPIC', 'easun_solar')
 DEVICE_ID = os.environ.get('DEVICE_ID', 'easun_shm_ii_7k')
+LEGACY_UNIQUE_ID = os.environ.get('LEGACY_UNIQUE_ID', 'false').lower() in ('1', 'true', 'yes', 'on')
 
 # MQTT topics
 MQTT_DISCOVERY_PREFIX = 'homeassistant'
@@ -383,10 +384,18 @@ class EasunMonitor:
             'icon': 'mdi:information-outline'
         })
         
-        # Publikování discovery zpráv
+        # Publikování discovery zpráv + cleanup starých retained configů
         for sensor in sensors:
-            unique_id = f"{self.device_info['identifiers'][0]}_{sensor['state_topic'].split('/')[-1]}"
+            suffix = sensor['state_topic'].split('/')[-1]
+            # Zvol aktuální schéma unique_id
+            if LEGACY_UNIQUE_ID:
+                unique_id = f"easun_{suffix}"
+                old_unique_id = f"{self.device_info['identifiers'][0]}_{suffix}"
+            else:
+                unique_id = f"{self.device_info['identifiers'][0]}_{suffix}"
+                old_unique_id = f"easun_{suffix}"
             discovery_topic = f"{MQTT_DISCOVERY_PREFIX}/sensor/{unique_id}/config"
+            old_discovery_topic = f"{MQTT_DISCOVERY_PREFIX}/sensor/{old_unique_id}/config"
             
             config = {
                 'name': f"EASUN {sensor['name']}",
@@ -402,11 +411,18 @@ class EasunMonitor:
                 if key.replace('_of_measurement', '') in sensor:
                     config[key] = sensor[key.replace('_of_measurement', '')]
             
+            # Publish current config
             self.mqtt_client.publish(
                 discovery_topic,
                 json.dumps(config),
                 retain=True
             )
+            # Cleanup old retained config topic (emptied retained message)
+            try:
+                if old_unique_id != unique_id:
+                    self.mqtt_client.publish(old_discovery_topic, payload="", retain=True)
+            except Exception as _:
+                pass
             logger.debug(f"Discovery zpráva odeslána pro {sensor['name']}")
     
     def publish_data(self, data):

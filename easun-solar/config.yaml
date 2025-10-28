@@ -20,6 +20,7 @@ options:
   update_interval: 10
   mqtt_base_topic: "easun_solar"
   device_id: "easun_shm_ii_7k"
+  legacy_unique_id: false
 schema:
   device: str
   mqtt_host: str
@@ -29,6 +30,7 @@ schema:
   update_interval: int(1,300)
   mqtt_base_topic: str
   device_id: str
+  legacy_unique_id: bool
 services:
   - mqtt:need
 devices:

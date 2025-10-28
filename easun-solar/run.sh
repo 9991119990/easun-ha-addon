@@ -13,6 +13,7 @@ if [ -f "$CONFIG_PATH" ]; then
     UPDATE_INTERVAL=$(jq -r '.update_interval // 10' "$CONFIG_PATH")
     MQTT_BASE_TOPIC=$(jq -r '.mqtt_base_topic // "easun_solar"' "$CONFIG_PATH")
     DEVICE_ID=$(jq -r '.device_id // "easun_shm_ii_7k"' "$CONFIG_PATH")
+    LEGACY_UNIQUE_ID=$(jq -r '.legacy_unique_id // false' "$CONFIG_PATH")
 else
     # Default values
     DEVICE="/dev/ttyUSB0"
@@ -23,6 +24,7 @@ else
     UPDATE_INTERVAL="10"
     MQTT_BASE_TOPIC="easun_solar"
     DEVICE_ID="easun_shm_ii_7k"
+    LEGACY_UNIQUE_ID=false
 fi
 
 # Prefer HA MQTT service if available, fallback to manual config
@@ -51,6 +53,7 @@ export MQTT_PASSWORD
 export UPDATE_INTERVAL
 export MQTT_BASE_TOPIC
 export DEVICE_ID
+export LEGACY_UNIQUE_ID
 
 # Run Python monitor
 exec python3 /easun_monitor.py
